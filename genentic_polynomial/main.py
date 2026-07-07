@@ -1,0 +1,18 @@
+import sys
+from PyQt5.QtWidgets import QApplication
+from ui import MainWindow, apply_styles
+
+
+def main():
+    """
+    Главная функция, запускает приложение
+    """
+    app = QApplication(sys.argv)    # объект приложения
+    apply_styles(app)               # применение стилей
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())           # запуск цикла обработки событий
+
+
+if __name__ == "__main__":
+    main()
