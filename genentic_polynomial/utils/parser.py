@@ -1,5 +1,4 @@
-import math
-
+import re
 
 def parse_polynomial(poly_str: str):
     """ Преобразует строку полинома в функцию """
@@ -16,26 +15,13 @@ def parse_polynomial(poly_str: str):
     if expr.count('(') != expr.count(')'):
         return lambda x: float('nan')
 
-    mat_dict = {
-        'x': 0,
-        'sin': math.sin,
-        'cos': math.cos,
-        'tan': math.tan,
-        'exp': math.exp,
-        'log': math.log,
-        'log10': math.log10,
-        'sqrt': math.sqrt,
-        'abs': abs,
-        'pi': math.pi,
-        'e': math.e,
-    }
+    if not check_degree(poly_str):
+        return lambda x: float('nan')
     
 
     def func(x):
-        """ Вычисляет значение полинома в точке x """
-        mat_dict['x'] = x
         try:
-            result = eval(expr, {"__builtins__": {}}, mat_dict)
+            result = eval(expr, {"__builtins__": {}}, {"x": x})
             return float(result) if isinstance(result, (int, float)) else float('nan')
         except Exception:
             return float('nan')
@@ -43,14 +29,26 @@ def parse_polynomial(poly_str: str):
     return func
 
 
-def get_variable_name(poly_str: str):
+def check_degree(poly_str: str) -> bool:
+    """ Проверка, что степень полинома не больше 8 """
+    matches = re.findall(r'x\^(\d+)', poly_str)
+    
+    max_degree = 0
+    for match in matches:
+        degree = int(match)
+        if degree > max_degree:
+            max_degree = degree
+    
+    if re.search(r'(?<!\^)x(?!\^)', poly_str):
+        if 1 > max_degree:
+            max_degree = 1
+    
+    return max_degree <= 8
+
+
+def get_variable_name(poly_str: str) -> str:
     """ Определяет имя переменной в полиноме """
-    import re
-    
     letters = re.findall(r'[a-zA-Z]', poly_str)
-    function_names = {'sin', 'cos', 'tan', 'exp', 'log', 'sqrt', 'abs'}
     for letter in letters:
-        if letter not in function_names:
-            return letter
-    
+        return letter
     return 'x'

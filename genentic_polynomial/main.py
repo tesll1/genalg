@@ -9,7 +9,7 @@ def main():
     """
     app = QApplication(sys.argv)    # объект приложения
     apply_styles(app)               # применение стилей
-    window = MainWindow()
+    window = MainWindow()           # главное окно
     window.show()
     sys.exit(app.exec_())           # запуск цикла обработки событий
 

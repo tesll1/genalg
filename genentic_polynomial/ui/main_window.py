@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import (
     QGroupBox, QLabel, QSpinBox, QDoubleSpinBox,
     QPushButton
 )
-from PyQt5.QtCore import Qt
 
 from ui.widgets import PolynomialInput, IntervalInput
 from utils.parser import parse_polynomial
@@ -17,7 +16,7 @@ class MainWindow(QMainWindow):
         """ Конструктор окна """
         super().__init__()
         self.setWindowTitle("Задача о поиске максимумов") 
-        self.setGeometry(100, 100, 1200, 800)
+        self.setGeometry(350, 150, 1200, 800)
         
         # центральный виджет
         central = QWidget()
@@ -33,29 +32,26 @@ class MainWindow(QMainWindow):
         right_panel = self.create_right_panel()
         main_layout.addWidget(right_panel, 2)
         
-        # статус бар
-        self.statusBar().showMessage("Готов к работе")
-        
-        # рисовка начального графика
-        self.update_function_plot()
+        self.statusBar().showMessage("Готов к работе")  # статус бар
+        self.update_function_plot()                     # рисовка начального графика
     
     def create_left_panel(self):
-        """ Создает левую панель с параметрами """
+        """ Создание левой панели """
         panel = QWidget()
         layout = QVBoxLayout()
         panel.setLayout(layout)
         
-        # Группа: целевая функция
+        # Группа целевая функция
         func_group = QGroupBox("Целевая функция")
         func_layout = QVBoxLayout()
         func_group.setLayout(func_layout)
         
         self.poly_input = PolynomialInput()
-        self.poly_input.valueChanged.connect(self.on_polynomial_changed)
+        self.poly_input.valueChanged.connect(self.update_function_plot)
         func_layout.addWidget(self.poly_input)
         
         hint = QLabel("Введите полином и нажмите Enter")
-        hint.setStyleSheet("font-size: 10px; color: gray;")
+        hint.setStyleSheet("font-size: 15px; color: gray;")
         func_layout.addWidget(hint)
 
         layout.addWidget(func_group)
@@ -66,7 +62,7 @@ class MainWindow(QMainWindow):
         interval_group.setLayout(interval_layout)
         
         self.interval_input = IntervalInput()
-        self.interval_input.valueChanged.connect(self.on_interval_changed)
+        self.interval_input.valueChanged.connect(self.update_function_plot)
         interval_layout.addWidget(self.interval_input)
         
         layout.addWidget(interval_group)
@@ -79,7 +75,7 @@ class MainWindow(QMainWindow):
         ga_layout.addWidget(QLabel("Размер популяции:"), 0, 0)
         self.pop_size = QSpinBox()
         self.pop_size.setRange(10, 1000)
-        self.pop_size.setValue(50)
+        self.pop_size.setValue(100)
         ga_layout.addWidget(self.pop_size, 0, 1)
         
         ga_layout.addWidget(QLabel("Кол-во поколений:"), 1, 0)
@@ -104,8 +100,8 @@ class MainWindow(QMainWindow):
         
         ga_layout.addWidget(QLabel("Размер турнира:"), 4, 0)
         self.tournament_size = QSpinBox()
-        self.tournament_size.setRange(2, 20)
-        self.tournament_size.setValue(3)
+        self.tournament_size.setRange(2, 100)
+        self.tournament_size.setValue(10)
         ga_layout.addWidget(self.tournament_size, 4, 1)
         
         layout.addWidget(ga_group)
@@ -123,7 +119,6 @@ class MainWindow(QMainWindow):
         self.stop_btn = QPushButton("Стоп")
         self.stop_btn.setObjectName("stop_btn")
         self.stop_btn.clicked.connect(self.on_stop_clicked)
-        self.stop_btn.setEnabled(False)
         
         self.step_btn = QPushButton("Шаг")
         self.step_btn.clicked.connect(self.on_step_clicked)
@@ -136,7 +131,6 @@ class MainWindow(QMainWindow):
         row2 = QHBoxLayout()
         self.clear_btn = QPushButton("Очистить")
         self.clear_btn.clicked.connect(self.on_clear_clicked)
-        
         self.reset_btn = QPushButton("Сброс")
         self.reset_btn.setObjectName("reset_btn")
         self.reset_btn.clicked.connect(self.on_reset_clicked)
@@ -161,8 +155,10 @@ class MainWindow(QMainWindow):
         
         # целевая функция + популяция
         self.fig1 = Figure(figsize=(6, 4), dpi=100)
+        self.fig1.patch.set_facecolor('#ffe4e4')
         self.canvas1 = FigureCanvas(self.fig1)
         self.ax1 = self.fig1.add_subplot(111)
+        self.ax1.set_facecolor('#ffe4e4')
         self.ax1.set_title("Целевая функция и популяция")
         self.ax1.set_xlabel("x")
         self.ax1.set_ylabel("f(x)")
@@ -171,8 +167,10 @@ class MainWindow(QMainWindow):
         
         # изменение приспособленности
         self.fig2 = Figure(figsize=(6, 2), dpi=100)
+        self.fig2.patch.set_facecolor('#ffe4e4') 
         self.canvas2 = FigureCanvas(self.fig2)
         self.ax2 = self.fig2.add_subplot(111)
+        self.ax2.set_facecolor('#ffe4e4')
         self.ax2.set_title("Изменение приспособленности")
         self.ax2.set_xlabel("Поколение")
         self.ax2.set_ylabel("Приспособленность")
@@ -205,9 +203,9 @@ class MainWindow(QMainWindow):
 
         x = np.linspace(l, r, 1000)
         y = []
-        for xi in x:
+        for i in x:
             try:
-                val = func(xi)
+                val = func(i)
                 y.append(val)
             except Exception:
                 y.append(float('nan'))
@@ -236,17 +234,7 @@ class MainWindow(QMainWindow):
         self.canvas1.draw()
 
 
-    # Обработчик событий
-    def on_polynomial_changed(self, text):
-        """ Пользователь изменил полином """
-        self.update_function_plot()
-    
-
-    def on_interval_changed(self, l, r):
-        """ Пользователь изменил интервал """
-        self.update_function_plot()
-    
-
+    # Обработка событий
     def on_start_clicked(self):
         """ Запуск алгоритма """
         poly_str = self.poly_input.get_polynomial()
@@ -254,10 +242,10 @@ class MainWindow(QMainWindow):
         try:
             test_val = func(0.0)
             if not math.isfinite(test_val):
-                self.statusBar().showMessage("Ошибка: неверный полином! Исправьте выражение.")
+                self.statusBar().showMessage("Ошибка: неверный полином")
                 return
         except Exception:
-            self.statusBar().showMessage("Ошибка: неверный полином! Исправьте выражение.")
+            self.statusBar().showMessage("Ошибка: неверный полином")
             return
         
         self.statusBar().showMessage("Запуск алгоритма")
@@ -313,10 +301,10 @@ class MainWindow(QMainWindow):
         """ Сброс параметров """
         self.poly_input.set_polynomial("x^5 - 3*x^2 + 4")
         self.interval_input.set_interval(-10, 10)
-        self.pop_size.setValue(50)
+        self.pop_size.setValue(100)
         self.generations.setValue(100)
         self.mutation_rate.setValue(0.1)
         self.crossover_rate.setValue(0.8)
-        self.tournament_size.setValue(3)
+        self.tournament_size.setValue(10)
         self.update_function_plot()
         self.statusBar().showMessage("Параметры сброшены")
