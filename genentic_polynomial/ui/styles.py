@@ -4,10 +4,10 @@ COLORS = {
     'red': "#ff6a6a",       # кнопка стопа
     'orange': "#ffc76c",    # кнопка сброса
     'gray': "#99a3a4",      # нпс элементы
-    'dark': "#520000",      # фон статусбаров, зоголовков
-    'pink': "#fcc4c4",      # фон окна
-    'white': "#ffe4e4",     # фон групп
-    'border': "#360101",    # рамки
+    'dark': "#24384d",      # фон статусбаров, зоголовков
+    'light': "#F27171",     # фон окна
+    'white': "#ffffff",     # фон групп
+    'border': "#203953",    # рамки
     'text': "#000000",      # текст
 }
 
@@ -15,7 +15,7 @@ COLORS = {
 STYLES = f"""
 /* Основное окно */
 QMainWindow {{
-    background-color: {COLORS['pink']};    /* фон */
+    background-color: {COLORS['light']};    /* фон */
 }}
 
 
@@ -101,7 +101,7 @@ QPushButton#reset_btn:hover {{
 /* Статус-бар: */
 QStatusBar {{
     background-color: {COLORS['dark']};     /* фон */
-    color: {COLORS['pink']};               /* текст */
+    color: {COLORS['light']};               /* текст */
     padding: 4px 8px;                       /* внутренние отступы */
 }}
 
@@ -119,7 +119,7 @@ QTableWidget::item:selected {{
 
 QHeaderView::section {{
     background-color: {COLORS['dark']};
-    color: {COLORS['pink']};
+    color: {COLORS['light']};
     padding: 6px;
     border: none;
 }}
