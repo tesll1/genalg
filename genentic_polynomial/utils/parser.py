@@ -1,6 +1,6 @@
 import re
 
-def parse_polynomial(poly_str: str):
+def parse_polynomial(poly_str):
     """ Преобразует строку полинома в функцию """
     poly_str = poly_str.strip()
 
@@ -29,7 +29,7 @@ def parse_polynomial(poly_str: str):
     return func
 
 
-def check_degree(poly_str: str) -> bool:
+def check_degree(poly_str):
     """ Проверка, что степень полинома не больше 8 """
     matches = re.findall(r'x\^(\d+)', poly_str)
     
@@ -39,16 +39,7 @@ def check_degree(poly_str: str) -> bool:
         if degree > max_degree:
             max_degree = degree
     
-    if re.search(r'(?<!\^)x(?!\^)', poly_str):
-        if 1 > max_degree:
-            max_degree = 1
+    if 'x' in poly_str and max_degree < 1:
+        max_degree = 1
     
     return max_degree <= 8
-
-
-def get_variable_name(poly_str: str) -> str:
-    """ Определяет имя переменной в полиноме """
-    letters = re.findall(r'[a-zA-Z]', poly_str)
-    for letter in letters:
-        return letter
-    return 'x'
