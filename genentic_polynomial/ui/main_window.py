@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
 )
 
 from ui.widgets import PolynomialInput, IntervalInput
-from utils.parser import parse_polynomial
+from utils.parser import parse_polynomial, check_degree
 
 
 class MainWindow(QMainWindow):
@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
         right_panel = self.create_right_panel()
         main_layout.addWidget(right_panel, 2)
         
-        self.statusBar().showMessage("Готов к работе")  # статус бар
+        self.statusBar().showMessage("Готов к работе. Введите, сгенерируйте или загрузите полином")  # статус бар
         self.update_function_plot()                     # рисовка начального графика
     
     def create_left_panel(self):
@@ -177,6 +177,9 @@ class MainWindow(QMainWindow):
         self.ax2.grid(True, alpha=0.3)
         layout.addWidget(self.canvas2)
         
+        self.fig1.tight_layout()
+        self.fig2.tight_layout()
+
         return panel
     
     def update_function_plot(self):
@@ -190,13 +193,25 @@ class MainWindow(QMainWindow):
         poly_str = self.poly_input.get_polynomial()
         if not poly_str.strip():
             self.ax1.clear()
-            self.ax1.text(0.5, 0.5, "Введите полином\nи нажмите Enter", 
+            self.ax1.text(0.5, 0.5, "Введите полином\nи нажмите Enter, загрузите или сгенерируйте", 
                          horizontalalignment='center', verticalalignment='center',
                          transform=self.ax1.transAxes, fontsize=14, color='gray')
             self.ax1.set_title("Целевая функция и популяция")
             self.ax1.set_xlabel("x")
             self.ax1.set_ylabel("f(x)")
             self.canvas1.draw()
+            return
+        
+        if not check_degree(poly_str):
+            self.ax1.clear()
+            self.ax1.text(0.5, 0.5, "Ошибка: степень больше 8", 
+                         horizontalalignment='center', verticalalignment='center',
+                         transform=self.ax1.transAxes, fontsize=14, color='red')
+            self.ax1.set_title("Целевая функция и популяция")
+            self.ax1.set_xlabel("x")
+            self.ax1.set_ylabel("f(x)")
+            self.canvas1.draw()
+            self.statusBar().showMessage("Ошибка: степень полинома не должна быть больше 8")
             return
         
         func = parse_polynomial(poly_str)
@@ -216,7 +231,7 @@ class MainWindow(QMainWindow):
             self.ax1.clear()
             self.ax1.text(0.5, 0.5, "Ошибка: неверное выражение", 
                          horizontalalignment='center', verticalalignment='center',
-                         transform=self.ax1.transAxes, fontsize=14, color='red')
+                         transform=self.ax1.transAxes, fontsize=14, color='#7cb8df')
             self.ax1.set_title("Целевая функция и популяция")
             self.ax1.set_xlabel("x")
             self.ax1.set_ylabel("f(x)")
@@ -225,7 +240,7 @@ class MainWindow(QMainWindow):
             return
         
         self.ax1.clear()
-        self.ax1.plot(x, y, 'b-', linewidth=2, label='f(x)')
+        self.ax1.plot(x, y, color='#7cb8df', linewidth=2, label='f(x)')
         self.ax1.set_title("Целевая функция и популяция")
         self.ax1.set_xlabel("x")
         self.ax1.set_ylabel("f(x)")
