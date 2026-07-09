@@ -16,6 +16,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# -x^2 + 1
-# -x^4 + 4*x^3 - 4*x^2

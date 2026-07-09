@@ -3,7 +3,7 @@ import math
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
     QGroupBox, QLabel, QSpinBox, QDoubleSpinBox,
-    QPushButton, QListWidget
+    QPushButton, QListWidget, QApplication, QScrollArea
 )
 
 from PyQt5.QtCore import QTimer
@@ -19,7 +19,7 @@ class MainWindow(QMainWindow):
         """ Конструктор окна """
         super().__init__()
         self.setWindowTitle("Задача о поиске максимумов") 
-        self.setGeometry(350, 150, 1200, 800)
+        self.setGeometry(350, 50, 1200, 800)
         
         # центральный виджет
         central = QWidget()
@@ -49,6 +49,11 @@ class MainWindow(QMainWindow):
 
     def create_left_panel(self):
         """ Создание левой панели """
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(2)  # AlwaysOff
+        scroll.setVerticalScrollBarPolicy(1)    # AsNeeded
+
         panel = QWidget()
         layout = QVBoxLayout()
         panel.setLayout(layout)
@@ -59,13 +64,12 @@ class MainWindow(QMainWindow):
         func_group.setLayout(func_layout)
         
         self.poly_input = PolynomialInput()
-        self.poly_input.valueChanged.connect(lambda: self.update_function_plot())
+        self.poly_input.valueChanged.connect(self.on_params_changed)
         func_layout.addWidget(self.poly_input)
         
         hint = QLabel("Введите полином и нажмите Enter")
         hint.setStyleSheet("font-size: 15px; color: gray;")
         func_layout.addWidget(hint)
-
         layout.addWidget(func_group)
         
         # Группа интервал
@@ -74,9 +78,8 @@ class MainWindow(QMainWindow):
         interval_group.setLayout(interval_layout)
         
         self.interval_input = IntervalInput()
-        self.interval_input.valueChanged.connect(lambda: self.update_function_plot())
+        self.interval_input.valueChanged.connect(self.on_params_changed)
         interval_layout.addWidget(self.interval_input)
-        
         layout.addWidget(interval_group)
         
         # Группа параметры ГА
@@ -115,10 +118,8 @@ class MainWindow(QMainWindow):
         self.tournament_size.setRange(2, 100)
         self.tournament_size.setValue(10)
         ga_layout.addWidget(self.tournament_size, 4, 1)
-        
         layout.addWidget(ga_group)
 
-        # Дополнительные параметры: остановка и штраф
         ga_layout.addWidget(QLabel("Поколений без улучшений"), 5, 0)
         self.max_no_improve = QSpinBox()
         self.max_no_improve.setRange(1, 1000)
@@ -133,7 +134,7 @@ class MainWindow(QMainWindow):
         ga_layout.addWidget(self.sigma, 6, 1)
 
         layout.addWidget(ga_group)
-        
+
         # Группа управление
         btn_group = QGroupBox("Управление")
         btn_layout = QVBoxLayout()
@@ -180,7 +181,7 @@ class MainWindow(QMainWindow):
         
         layout.addWidget(btn_group)
 
-        # Найденные максимумы
+        # Группа найденные максимумы
         maximum_group = QGroupBox("Найденные максимумы")
         maximum_layout = QVBoxLayout()
         maximum_group.setLayout(maximum_layout)
@@ -190,15 +191,17 @@ class MainWindow(QMainWindow):
         layout.addWidget(maximum_group)
 
         layout.addStretch()
+        scroll.setWidget(panel)
         self.stop_btn.setEnabled(False)
         self.back_btn.setEnabled(False)
         self.finish_btn.setEnabled(False)
         
-        return panel
+        return scroll
     
     def create_right_panel(self):
         """ Создаёт правую панель с графиками """
         from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+        from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
         from matplotlib.figure import Figure
         
         panel = QWidget()
@@ -216,6 +219,10 @@ class MainWindow(QMainWindow):
         self.ax1.set_ylabel("f(x)")
         self.ax1.grid(True, alpha=0.3)
         layout.addWidget(self.canvas1)
+
+        toolbar1 = NavigationToolbar(self.canvas1, self)
+        layout.addWidget(toolbar1)
+        layout.addWidget(self.canvas1)
         
         # изменение приспособленности
         self.fig2 = Figure(figsize=(6, 2), dpi=100)
@@ -228,7 +235,11 @@ class MainWindow(QMainWindow):
         self.ax2.set_ylabel("Приспособленность")
         self.ax2.grid(True, alpha=0.3)
         layout.addWidget(self.canvas2)
-        
+
+        toolbar2 = NavigationToolbar(self.canvas2, self)
+        layout.addWidget(toolbar2)
+        layout.addWidget(self.canvas2)
+
         self.fig1.tight_layout()
         self.fig2.tight_layout()
 
@@ -310,6 +321,7 @@ class MainWindow(QMainWindow):
     def update_function_plot(self, population=None, maximum=None, selected=None):
         """ Обновляет график целевой функции """
         import numpy as np
+        import math
         
         l, r = self.interval_input.get_interval()
         if l >= r:
@@ -319,8 +331,8 @@ class MainWindow(QMainWindow):
         if not poly_str.strip():
             self.ax1.clear()
             self.ax1.text(0.5, 0.5, "Введите полином\nи нажмите Enter, загрузите или сгенерируйте", 
-                         horizontalalignment='center', verticalalignment='center',
-                         transform=self.ax1.transAxes, fontsize=14, color='gray')
+                        horizontalalignment='center', verticalalignment='center',
+                        transform=self.ax1.transAxes, fontsize=14, color='gray')
             self.ax1.set_title("Целевая функция и популяция")
             self.ax1.set_xlabel("x")
             self.ax1.set_ylabel("f(x)")
@@ -330,8 +342,8 @@ class MainWindow(QMainWindow):
         if not check_degree(poly_str):
             self.ax1.clear()
             self.ax1.text(0.5, 0.5, "Ошибка: степень больше 8", 
-                         horizontalalignment='center', verticalalignment='center',
-                         transform=self.ax1.transAxes, fontsize=14, color='red')
+                        horizontalalignment='center', verticalalignment='center',
+                        transform=self.ax1.transAxes, fontsize=14, color='red')
             self.ax1.set_title("Целевая функция и популяция")
             self.ax1.set_xlabel("x")
             self.ax1.set_ylabel("f(x)")
@@ -346,7 +358,10 @@ class MainWindow(QMainWindow):
         for i in x:
             try:
                 val = func(i)
-                y.append(val)
+                if math.isnan(val) or math.isinf(val):
+                    y.append(float('nan'))
+                else:
+                    y.append(val)
             except Exception:
                 y.append(float('nan'))
         
@@ -355,8 +370,8 @@ class MainWindow(QMainWindow):
         if np.all(np.isnan(y)):
             self.ax1.clear()
             self.ax1.text(0.5, 0.5, "Ошибка: неверное выражение", 
-                         horizontalalignment='center', verticalalignment='center',
-                         transform=self.ax1.transAxes, fontsize=14, color='#7cb8df')
+                        horizontalalignment='center', verticalalignment='center',
+                        transform=self.ax1.transAxes, fontsize=14, color='red')
             self.ax1.set_title("Целевая функция и популяция")
             self.ax1.set_xlabel("x")
             self.ax1.set_ylabel("f(x)")
@@ -371,38 +386,47 @@ class MainWindow(QMainWindow):
         self.ax1.set_ylabel("f(x)")
         self.ax1.grid(True, alpha=0.3)
 
-        if population is not None:
-            pop_x = population
-            pop_y = [func(xi) for xi in pop_x]
-            self.ax1.scatter(pop_x, pop_y, color='#2ecc71', s=30, alpha=0.6, label='Популяция')
+        if population is not None and isinstance(population, (list, tuple)):
+            pop_x = []
+            pop_y = []
+            for xi in population:
+                val = func(xi)
+                if not math.isnan(val) and math.isfinite(val):
+                    pop_x.append(xi)
+                    pop_y.append(val)
+            if pop_x:
+                self.ax1.scatter(pop_x, pop_y, color='#2ecc71', s=30, alpha=0.6, label='Популяция')
 
-        if maximum is not None:
+        if maximum is not None and isinstance(maximum, (list, tuple)):
             valid_maximum = []
             for m in maximum:
                 if isinstance(m, (tuple, list)) and len(m) == 2:
                     try:
-                        # дополнительно проверяем, что оба элемента – числа
                         float(m[0])
                         float(m[1])
                         valid_maximum.append(m)
                     except (TypeError, ValueError):
-                        pass  # игнорируем некорректные данные
+                        pass
             if valid_maximum:
                 mx = [m[0] for m in valid_maximum]
                 my = [m[1] for m in valid_maximum]
                 self.ax1.scatter(mx, my, color='red', s=100, marker='*', label='Максимумы', zorder=5)
 
-        # Подсветка выбранного максимума
         if selected is not None:
             sx, sy = selected
-            self.ax1.scatter([sx], [sy], color='yellow', s=200, marker='o', edgecolors='black', linewidth=2, label='Выбранный максимум', zorder=10)
-            self.ax1.annotate(f'x={sx:.4f}', (sx, sy), xytext=(5, 5), textcoords='offset points', fontsize=10, color='darkred')
+            self.ax1.scatter([sx], [sy], color='yellow', s=200, marker='o', 
+                            edgecolors='black', linewidth=2, label='Выбранный максимум', zorder=10)
+            self.ax1.annotate(f'x={sx:.4f}', (sx, sy), xytext=(5, 5), 
+                            textcoords='offset points', fontsize=10, color='darkred')
 
         self.ax1.relim()
         self.ax1.autoscale_view()
+        
         y_min, y_max = self.ax1.get_ylim()
-        if y_max > y_min:
+        if math.isfinite(y_min) and math.isfinite(y_max) and y_max > y_min:
             y_range = y_max - y_min
+            if y_range > 1e6:
+                y_range = 1e6
             self.ax1.set_ylim(y_min - 0.15 * y_range, y_max + 0.15 * y_range)
 
         self.ax1.legend()
@@ -503,21 +527,37 @@ class MainWindow(QMainWindow):
         """Быстрый прогон всех оставшихся поколений без анимации"""
         if self.gen_alg is None or self.gen_alg.finished:
             return
+        
         self.start_btn.setEnabled(False)
-        self.stop_btn.setEnabled(False)
+        self.stop_btn.setEnabled(True)
         self.step_btn.setEnabled(False)
         self.back_btn.setEnabled(False)
         self.finish_btn.setEnabled(False)
+        
+        self.statusBar().showMessage("Быстрый прогон")
+        
+        self.finish_timer = QTimer()
+        self.finish_timer.timeout.connect(self._finish_step)
+        self.finish_timer.start(10)
 
-        while not self.gen_alg.finished and not self.gen_alg.stopped:
-            self.gen_alg.step()
-        self.update_plots_from_gen_alg()
-        self.start_btn.setEnabled(True)
-        self.stop_btn.setEnabled(False)
-        self.step_btn.setEnabled(True)
-        self.back_btn.setEnabled(self.gen_alg.get_history_length() > 1)
-        self.finish_btn.setEnabled(False)
-        self.statusBar().showMessage("Финиш выполнен")
+    def _finish_step(self):
+        """ Один шаг быстрого прогона """
+        if self.gen_alg is None or self.gen_alg.finished or self.gen_alg.stopped:
+            self.finish_timer.stop()
+            self.update_plots_from_gen_alg()
+            self.start_btn.setEnabled(True)
+            self.stop_btn.setEnabled(False)
+            self.step_btn.setEnabled(True)
+            self.back_btn.setEnabled(self.gen_alg and self.gen_alg.get_history_length() > 1)
+            self.finish_btn.setEnabled(False)
+            self.statusBar().showMessage("Финиш выполнен" if not self.gen_alg.stopped else "Остановлено")
+            return
+        
+        self.gen_alg.step()
+        if self.gen_alg.generation % 10 == 0:
+            self.update_plots_from_gen_alg()
+            QApplication.processEvents()
+
 
     def on_back_clicked(self):
         if self.gen_alg and self.gen_alg.go_back(1):
