@@ -81,6 +81,24 @@ QPushButton#start_btn:hover {{
     background-color: #27ae60;           /* темнеет при наведении */
 }}
 
+/* Кнопка "Назад" */
+QPushButton#back_btn {{
+    background-color: #f39c12;
+}}
+QPushButton#back_btn:hover {{
+    background-color: #d68910;
+}}
+
+/* Кнопка "Финиш" */
+QPushButton#finish_btn {{
+    background-color: #8e44ad;
+}}
+QPushButton#finish_btn:hover {{
+    background-color: #732d91;
+}}
+
+
+
 /* стоп: */
 QPushButton#stop_btn {{
     background-color: {COLORS['red']};
