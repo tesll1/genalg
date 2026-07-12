@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (
 )
 
 from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QColor
 
 from ui.widgets import PolynomialInput, IntervalInput
 from utils.parser import parse_polynomial, check_degree
@@ -51,10 +52,14 @@ class MainWindow(QMainWindow):
         """ Создание левой панели """
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setHorizontalScrollBarPolicy(2)  # AlwaysOff
-        scroll.setVerticalScrollBarPolicy(1)    # AsNeeded
-
+        scroll.setHorizontalScrollBarPolicy(2)
+        scroll.setVerticalScrollBarPolicy(1)
+                             
         panel = QWidget()
+        panel.setAutoFillBackground(True)
+        palette = panel.palette()
+        palette.setColor(panel.backgroundRole(), QColor(196, 231, 252))
+        panel.setPalette(palette)
         layout = QVBoxLayout()
         panel.setLayout(layout)
         
@@ -210,10 +215,10 @@ class MainWindow(QMainWindow):
         
         # целевая функция + популяция
         self.fig1 = Figure(figsize=(6, 4), dpi=100)
-        self.fig1.patch.set_facecolor('#ffe4e4')
+        self.fig1.patch.set_facecolor('#e4f6ff')
         self.canvas1 = FigureCanvas(self.fig1)
         self.ax1 = self.fig1.add_subplot(111)
-        self.ax1.set_facecolor('#ffe4e4')
+        self.ax1.set_facecolor('#e4f6ff')
         self.ax1.set_title("Целевая функция и популяция")
         self.ax1.set_xlabel("x")
         self.ax1.set_ylabel("f(x)")
@@ -226,10 +231,10 @@ class MainWindow(QMainWindow):
         
         # изменение приспособленности
         self.fig2 = Figure(figsize=(6, 2), dpi=100)
-        self.fig2.patch.set_facecolor('#ffe4e4') 
+        self.fig2.patch.set_facecolor('#e4f6ff') 
         self.canvas2 = FigureCanvas(self.fig2)
         self.ax2 = self.fig2.add_subplot(111)
-        self.ax2.set_facecolor('#ffe4e4')
+        self.ax2.set_facecolor('#e4f6ff')
         self.ax2.set_title("Изменение приспособленности")
         self.ax2.set_xlabel("Поколение")
         self.ax2.set_ylabel("Приспособленность")
@@ -380,7 +385,7 @@ class MainWindow(QMainWindow):
             return
         
         self.ax1.clear()
-        self.ax1.plot(x, y, color='#7cb8df', linewidth=2, label='f(x)')
+        self.ax1.plot(x, y, color="#fcb79a", linewidth=2, label='f(x)')
         self.ax1.set_title("Целевая функция и популяция")
         self.ax1.set_xlabel("x")
         self.ax1.set_ylabel("f(x)")
@@ -395,7 +400,7 @@ class MainWindow(QMainWindow):
                     pop_x.append(xi)
                     pop_y.append(val)
             if pop_x:
-                self.ax1.scatter(pop_x, pop_y, color='#2ecc71', s=30, alpha=0.6, label='Популяция')
+                self.ax1.scatter(pop_x, pop_y, color="#3eafff", s=30, alpha=1, label='Популяция')
 
         if maximum is not None and isinstance(maximum, (list, tuple)):
             valid_maximum = []
@@ -410,7 +415,7 @@ class MainWindow(QMainWindow):
             if valid_maximum:
                 mx = [m[0] for m in valid_maximum]
                 my = [m[1] for m in valid_maximum]
-                self.ax1.scatter(mx, my, color='red', s=100, marker='*', label='Максимумы', zorder=5)
+                self.ax1.scatter(mx, my, color="#FF5A5A", s=100, marker='*', label='Максимумы', zorder=5)
 
         if selected is not None:
             sx, sy = selected
@@ -439,7 +444,7 @@ class MainWindow(QMainWindow):
         self.ax2.set_ylabel("Лучшее f(x)")
         self.ax2.grid(True, alpha=0.3)
         if history and len(history) > 0:
-            self.ax2.plot(range(1, len(history)+1), history, color='#e74c3c', linewidth=2)
+            self.ax2.plot(range(1, len(history)+1), history, color="#ffd898", linewidth=2)
         self.canvas2.draw()
 
 

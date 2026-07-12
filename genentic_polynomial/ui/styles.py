@@ -2,13 +2,15 @@ COLORS = {
     'blue': "#7cb8df",      # кнопки, акценты
     'green': "#85dca9",     # кнопка запуска
     'red': "#ff6a6a",       # кнопка стопа
-    'orange': "#ffc76c",    # кнопка сброса
-    'gray': "#99a3a4",      # нпс элементы
-    'dark': "#520000",      # фон статусбаров, зоголовков
-    'pink': "#fcc4c4",      # фон окна
-    'white': "#ffe4e4",     # фон групп
-    'border': "#360101",    # рамки
-    'text': "#000000",      # текст
+    'orange': "#fd9061",    # кнопка сброса
+    'desert': "#ffbb4f",    # кнопка назад
+    'finish': "#91f0c5",    # кнопка финиша
+    'gray': "#b3d3d6",      # нпс элементы
+    'dark': "#050052",      # фон статусбаров, зоголовков
+    'pink': "#c4e7fc",      # фон окна
+    'white': "#e4f6ff",     # фон групп
+    'border': "#020136",    # рамки
+    'text': "#010125",      # текст
 }
 
 
@@ -99,18 +101,18 @@ QPushButton#reset_btn:hover {{
 
 /* назад */
 QPushButton#back_btn {{
-    background-color: #f39c12;
+    background-color: {COLORS['desert']};
 }}
 QPushButton#back_btn:hover {{
-    background-color: #d68910;
+    background-color: #d59e45;
 }}
 
 /* финиш */
 QPushButton#finish_btn {{
-    background-color: #8e44ad;
+    background-color: {COLORS['finish']};
 }}
 QPushButton#finish_btn:hover {{
-    background-color: #732d91;
+    background-color: #7dceaa;
 }}
 
 
@@ -120,6 +122,7 @@ QStatusBar {{
     color: {COLORS['pink']};               /* текст */
     padding: 4px 8px;                       /* внутренние отступы */
 }}
+
 
 /* Таблица результатов */
 QTableWidget {{
